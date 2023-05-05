@@ -1,5 +1,0 @@
-if for while
-23 32 -123 332 12.2
-+ * - / =
-asdsd asdsss asd34sd 23sadas
-12 + 21
