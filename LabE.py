@@ -86,6 +86,7 @@ converted_productions = convert_productions(productions_dict)
 # print("----------------------")
 # print(converted_productions)
 # print("----------------------")
+# print(tokens)
 
 states, transitions = canonical_collection(converted_productions)
 
