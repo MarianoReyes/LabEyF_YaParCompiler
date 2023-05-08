@@ -18,9 +18,9 @@ def dibujar_lr0(states, transitions):
                 else:
                     non_derived.append(str(item))
 
-            label = 'I ' + str(i) + '\n-----------\n'
+            label = 'I ' + str(i) + '\n<---------------->\n'
             label += '\n'.join(non_derived) + \
-                '\n-----------\n' + '\n'.join(derived)
+                '\n<---------------->\n' + '\n'.join(derived)
 
         dot.node(str(i), label=label)
 
