@@ -3,21 +3,27 @@ from LL import first_sets, follow_sets
 from graficar import dibujar_lr0
 import re
 
+# toma el nombre del archivo YALP como argumento y devuelve el contenido del archivo como una cadena
 
-def read_yalp_file(filename):
+
+def leer_yalp(filename):
     with open(filename, 'r') as file:
         content = file.read()
     return content
 
+# toma el contenido del archivo YALP como argumento y devuelve dos secciones separadas de tokens y producciones, eliminando la sección opcional de encabezado
 
-def split_sections(content):
+
+def separar_yalp(content):
     sections = content.split('%%')
     tokens_section = sections[0]
     productions_section = sections[1]
     return tokens_section, productions_section
 
+# procesa la sección de tokens del archivo YALP y devuelve una lista de tokens definidos en esa sección
 
-def process_tokens_section(content):
+
+def procesar_tokens(content):
     tokens = []
     lines = content.split('\n')
     for line in lines:
@@ -26,8 +32,10 @@ def process_tokens_section(content):
             tokens.extend(line_tokens)
     return tokens
 
+# procesa la sección de producciones del archivo YALP y devuelve un diccionario que contiene las reglas de producción
 
-def process_productions_section(content):
+
+def procesar_producciones(content):
     productions = {}
     content = re.sub(r'/\*.*?\*/', '', content,
                      flags=re.DOTALL)  # Eliminar comentarios
@@ -64,13 +72,17 @@ def process_productions_section(content):
                 production_rules.append(line)
     return productions
 
+# procesa el archivo completo
 
-def parse_yalp_file(filename):
-    content = read_yalp_file(filename)
-    tokens_section, productions_section = split_sections(content)
-    tokens = process_tokens_section(tokens_section)
-    productions = process_productions_section(productions_section)
+
+def procesar_yalp(filename):
+    content = leer_yalp(filename)
+    tokens_section, productions_section = separar_yalp(content)
+    tokens = procesar_tokens(tokens_section)
+    productions = procesar_producciones(productions_section)
     return tokens, productions
+
+#  toma el diccionario de producciones y devuelve una versión modificada del mismo diccionario en la que cada regla de producción se ha convertido en una lista de elementos separados por espacio
 
 
 def convert_productions(productions_dict):
@@ -79,50 +91,76 @@ def convert_productions(productions_dict):
         converted_productions[key] = [rule.split() for rule in value]
     return converted_productions
 
+# verifica si los tokens del yalp se encuentran en los tokens del lex
 
-tokens, productions_dict = parse_yalp_file('slr-1.yalp')
+
+def same_content(tokens_lex, tokens):
+    return sorted(tokens_lex) == sorted(tokens)
+
+
+archivo = input("Ingrese el nombre del archivo a ejecutar: ")
+
+# Abrir y leer el archivo
+with open(archivo + ".yal", "r") as f:
+    content = f.read()
+
+# Dividir el contenido del archivo en líneas
+lines = content.split("\n")
+
+# Buscar la línea que contiene "rule tokens"
+rule_tokens_index = None
+for i, line in enumerate(lines):
+    if re.match(r"^rule tokens = .*?$", line):
+        rule_tokens_index = i
+        break
+
+# Extraer el contenido de las llaves luego de cada token en las líneas siguientes
+tokens_lex = []
+if rule_tokens_index is not None:
+    for line in lines[rule_tokens_index + 1:]:
+        tokens_lex.extend(re.findall(r"\{\s*(.+?)\s*\}", line))
+
+
+tokens, productions_dict = procesar_yalp(archivo + '.yalp')
 converted_productions = convert_productions(productions_dict)
-# productions = [(nt, rule) for nt, rules in productions_dict.items() for rule in rules]
-# print("----------------------")
-# print(converted_productions)
-# print("----------------------")
-# print(tokens)
 
-states, transitions = canonical_collection(converted_productions)
+if same_content(tokens_lex, tokens):
+    states, transitions = canonical_collection(converted_productions)
 
-# Imprimir estados y transiciones
-print('\nEstados:')
-for i, state in enumerate(states):
-    print(f'{i}: {state}')
+    # Imprimir estados y transiciones
+    print('\nEstados:')
+    for i, state in enumerate(states):
+        print(f'{i}: {state}')
 
-print('\nTransiciones:')
-for transition in transitions:
-    print(transition)
+    print('\nTransiciones:')
+    for transition in transitions:
+        print(transition)
 
-# Funcion para dibujar el automata lr(0)
-dibujar_lr0(states, transitions)
+    # Funcion para dibujar el automata lr(0)
+    dibujar_lr0(states, transitions)
 
-# Funciones Primero y Siguiente
-print("\nPrimero y Siguiente")
+    # Funciones Primero y Siguiente
+    print("\nPrimero y Siguiente")
 
+    def convert_productions(productions):
+        converted_productions = {}
+        for key, value in productions.items():
+            converted_productions[key] = [prod.split() for prod in value]
+        return converted_productions
 
-def convert_productions(productions):
-    converted_productions = {}
-    for key, value in productions.items():
-        converted_productions[key] = [prod.split() for prod in value]
-    return converted_productions
+    print("\nDiccionario de producciones: ", productions_dict)
 
+    converted_prod = convert_productions(productions_dict)
+    first = first_sets(converted_prod)
+    follow = follow_sets(converted_prod, first)
 
-print("\nDiccionario de producciones: ", productions_dict)
+    print("\nPrimeros:")
+    for non_terminal, first_set in first.items():
+        print(f"{non_terminal}: {first_set}")
 
-converted_prod = convert_productions(productions_dict)
-first = first_sets(converted_prod)
-follow = follow_sets(converted_prod, first)
+    print("\nSiguiente:")
+    for non_terminal, follow_set in follow.items():
+        print(f"{non_terminal}: {follow_set}")
 
-print("\nPrimeros:")
-for non_terminal, first_set in first.items():
-    print(f"{non_terminal}: {first_set}")
-
-print("\nSiguiente:")
-for non_terminal, follow_set in follow.items():
-    print(f"{non_terminal}: {follow_set}")
+else:
+    print("Los Tokens del yalp no son iguales a los tokens del lex")

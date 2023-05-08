@@ -1,0 +1,25 @@
+(* Lexer para Gramática No. 2 - Expresiones aritméticas extendidas *)
+
+(* Introducir cualquier header aqui *)
+
+let delim = ,
+let ws = delim(delim)@
+let letter = a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z
+let digit = 0|1|2|3|4|5|6|7|8|9
+let digits = digit(digit)@
+let id = letter(letter|digit)@
+let negativo = -
+let number = negativo?digito(digito)@
+
+rule tokens = 
+    ws        { WS }               (* Cambie por una acción válida, que devuelva el token *)
+  | id        { ID }
+  | number    { NUMBER }
+  | '+'       { PLUS }
+  | '-'       { MINUS }
+  | '*'       { TIMES }
+  | '/'       { DIV }
+  | '('       { LPAREN }
+  | ')'       { RPAREN }
+
+(* Introducir cualquier trailer aqui *)
