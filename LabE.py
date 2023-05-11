@@ -160,11 +160,11 @@ if same_content(tokens_lex, tokens):
     first = primeros(converted_prod)
     follow = siguientes(converted_prod, first)
 
-    print("\nPrimeros:")
+    print("\nConjuntos Primeros:")
     for non_terminal, first_set in first.items():
         print(f"{non_terminal}: {first_set}")
 
-    print("\nSiguiente:")
+    print("\nnConjuntos Siguientes:")
     for non_terminal, follow_set in follow.items():
         print(f"{non_terminal}: {follow_set}")
 
