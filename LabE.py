@@ -154,8 +154,6 @@ if same_content(tokens_lex, tokens):
             converted_productions[key] = [prod.split() for prod in value]
         return converted_productions
 
-    print("\nDiccionario de producciones: ", productions_dict)
-
     converted_prod = convert_productions(productions_dict)
     first = primeros(converted_prod)
     follow = siguientes(converted_prod, first)
@@ -164,7 +162,7 @@ if same_content(tokens_lex, tokens):
     for non_terminal, first_set in first.items():
         print(f"{non_terminal}: {first_set}")
 
-    print("\nnConjuntos Siguientes:")
+    print("\nConjuntos Siguientes:")
     for non_terminal, follow_set in follow.items():
         print(f"{non_terminal}: {follow_set}")
 
