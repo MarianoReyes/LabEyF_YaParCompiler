@@ -1,4 +1,4 @@
-def get_terminals_and_non_terminals(productions):
+def get_terminales_no_terminales(productions):
     non_terminals = set(productions.keys())
     terminals = set()
 
@@ -11,8 +11,8 @@ def get_terminals_and_non_terminals(productions):
     return terminals, non_terminals
 
 
-def first_sets(productions):
-    terminals, non_terminals = get_terminals_and_non_terminals(productions)
+def primeros(productions):
+    terminals, non_terminals = get_terminales_no_terminales(productions)
     first = {non_terminal: set() for non_terminal in non_terminals}
 
     changed = True
@@ -44,8 +44,8 @@ def first_sets(productions):
     return first
 
 
-def follow_sets(productions, first_sets):
-    _, non_terminals = get_terminals_and_non_terminals(productions)
+def siguientes(productions, primeros):
+    _, non_terminals = get_terminales_no_terminales(productions)
     follow = {non_terminal: set() for non_terminal in non_terminals}
     follow[next(iter(non_terminals))].add('$')
 
@@ -61,7 +61,8 @@ def follow_sets(productions, first_sets):
                             next_symbol = production[i + 1]
                             if next_symbol in non_terminals:
                                 added = len(follow[symbol])
-                                follow[symbol].update(first_sets[next_symbol] - {None})
+                                follow[symbol].update(
+                                    primeros[next_symbol] - {None})
                                 if len(follow[symbol]) != added:
                                     changed = True
                             # Si el siguiente símbolo es un terminal, añadirlo al conjunto follow
@@ -77,4 +78,3 @@ def follow_sets(productions, first_sets):
                                 changed = True
 
     return follow
-

@@ -1,5 +1,5 @@
-from LR import canonical_collection
-from LL import first_sets, follow_sets
+from LR import coleccion_canonica
+from LL import primeros, siguientes
 from graficar import dibujar_lr0
 import re
 
@@ -120,12 +120,11 @@ if rule_tokens_index is not None:
     for line in lines[rule_tokens_index + 1:]:
         tokens_lex.extend(re.findall(r"\{\s*(.+?)\s*\}", line))
 
-
 tokens, productions_dict = procesar_yalp(archivo + '.yalp')
 converted_productions = convert_productions(productions_dict)
 
 if same_content(tokens_lex, tokens):
-    states, transitions = canonical_collection(converted_productions)
+    states, transitions = coleccion_canonica(converted_productions)
 
     # Imprimir estados y transiciones
     print('\nEstados:')
@@ -151,8 +150,8 @@ if same_content(tokens_lex, tokens):
     print("\nDiccionario de producciones: ", productions_dict)
 
     converted_prod = convert_productions(productions_dict)
-    first = first_sets(converted_prod)
-    follow = follow_sets(converted_prod, first)
+    first = primeros(converted_prod)
+    follow = siguientes(converted_prod, first)
 
     print("\nPrimeros:")
     for non_terminal, first_set in first.items():

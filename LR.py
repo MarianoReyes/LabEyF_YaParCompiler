@@ -38,7 +38,7 @@ def goto(items, symbol, productions):
     return closure(next_items, productions)
 
 
-def canonical_collection(productions):
+def coleccion_canonica(productions):
     items = LR0Item(
         (list(productions.keys())[0]+'\'', [list(productions.keys())[0]]), 0)
     states = [closure({items}, productions)]
