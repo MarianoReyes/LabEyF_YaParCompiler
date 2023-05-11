@@ -1,7 +1,7 @@
+import re
 from LR import coleccion_canonica
 from LL import primeros, siguientes
 from graficar import dibujar_lr0
-import re
 
 # toma el nombre del archivo YALP como argumento y devuelve el contenido del archivo como una cadena
 
