@@ -15,10 +15,14 @@ def leer_yalp(filename):
 
 
 def separar_yalp(content):
-    sections = content.split('%%')
-    tokens_section = sections[0]
-    productions_section = sections[1]
-    return tokens_section, productions_section
+    try:
+        sections = content.split('%%')
+        tokens_section = sections[0]
+        productions_section = sections[1]
+        return tokens_section, productions_section
+    except:
+        print("\nNo se encontro el separador '%%' en el archivo yalp.")
+        exit()
 
 # procesa la sección de tokens del archivo YALP y devuelve una lista de tokens definidos en esa sección
 
@@ -30,6 +34,9 @@ def procesar_tokens(content):
         if line.startswith("%token"):
             line_tokens = line[len("%token"):].strip().split(' ')
             tokens.extend(line_tokens)
+        if not line.startswith("%token") and not line.startswith("IGNORE") and not line.startswith("/*") and line.strip():
+            print("\nLos tokens no estan bien definidos.")
+            exit()
     return tokens
 
 # procesa la sección de producciones del archivo YALP y devuelve un diccionario que contiene las reglas de producción
