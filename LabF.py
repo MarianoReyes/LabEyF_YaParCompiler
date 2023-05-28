@@ -190,7 +190,7 @@ if same_content(tokens_lex, tokens):
             goto_table[state_id] = {}
 
         for transition in transitions:
-            current, symbol, next = transition
+            current, symbol, nextsym = transition
             if symbol == "$":
                 action_table[current]["$"] = "acc"
 
@@ -204,41 +204,35 @@ if same_content(tokens_lex, tokens):
 
                 # Caso 1: Item completado (punto al final)
                 if position == len(production[1]):
-                    if production[0] == 'expression' and item.derived:
-                        # caso especial para la primera produccion
-                        action_table[state_id]['$'] = 'accept'
-                    else:
+                    if production[0] != 'expression' and not item.derived:
                         # Reduction (R)
                         follow_symbols = siguientes(productions, production[0])
                         for symbol in follow_symbols:
-                            try:
+                            if symbol.isupper():
                                 action_table[state_id][symbol] = 'R' + \
                                     str(list(productions.keys()).index(
                                         production[0]))
-                            except:
-                                pass
+
                 else:
                     symbol = production[1][position]
 
                     # Caso 2: Transicion hacia un estado con GOTO (SHIFT)
-                    for transition in transitions:
-                        current_state, transition_symbol, next_state = transition
-                        if current_state == state_id and transition_symbol == symbol:
-                            next_state_id = next_state
-                            goto_table[state_id][symbol] = next_state_id
-                            break
-                    else:
-                        # Caso 3: Shift
-                        if symbol.isalpha() or symbol.isnumeric():
-                            next_state_id = state_id + 1  # Increment the state identifier
-                            action_table[state_id][symbol] = 'S' + \
-                                str(next_state_id)
+                    if symbol.isalpha() and symbol.islower():
+                        next_state_id = state_id
+                        goto_table[state_id][symbol] = next_state_id
+                    # Caso 3: Shift
+                    elif symbol.isalpha() and symbol.isupper():
+                        next_state_id = state_id + 1  # Increment the state identifier
+                        action_table[state_id][symbol] = 'S' + \
+                            str(next_state_id)
 
         return action_table, goto_table
 
     # Obtener las tablas de análisis SLR
     action_table, goto_table = generate_slr_tables(
         states, transitions, converted_productions)
+
+    print(action_table)
 
     # ACTION table
     action_df = pd.DataFrame.from_dict(action_table, orient='index')
