@@ -189,6 +189,11 @@ if same_content(tokens_lex, tokens):
             action_table[state_id] = {}
             goto_table[state_id] = {}
 
+        for transition in transitions:
+            current, symbol, next = transition
+            if symbol == "$":
+                action_table[current]["$"] = "acc"
+
         # Fill the ACTION and GOTO tables
         for state in states:
             # Get the identifier of the state
@@ -219,7 +224,7 @@ if same_content(tokens_lex, tokens):
                     for transition in transitions:
                         current_state, transition_symbol, next_state = transition
                         if current_state == state_id and transition_symbol == symbol:
-                            next_state_id = state_ids[frozenset(next_state)]
+                            next_state_id = next_state
                             goto_table[state_id][symbol] = next_state_id
                             break
                     else:
@@ -228,12 +233,6 @@ if same_content(tokens_lex, tokens):
                             next_state_id = state_id + 1  # Increment the state identifier
                             action_table[state_id][symbol] = 'S' + \
                                 str(next_state_id)
-
-            # Remove non-terminals from the action_table
-            for state_id, state_actions in action_table.items():
-                for symbol in list(state_actions.keys()):
-                    if not symbol.isalpha() or symbol.islower():
-                        del state_actions[symbol]
 
         return action_table, goto_table
 
