@@ -201,9 +201,9 @@ if same_content(tokens_lex, tokens):
         error_list = []
 
         def handle_conflict(table, row, col, value):
-            if table.loc[row, col] is not None:
+            if pd.notna(table.loc[row, col]) and col != '$':
                 error_list.append(
-                    f"Conflicto en ({row}, {col}): Valor actual: {table.loc[row, col]}, Nuevo valor: {value}")
+                    f'1 Conflict in [{i},{col}] = ({table.loc[row, col]},{value}')
             else:
                 table.loc[row, col] = value
 
@@ -212,7 +212,7 @@ if same_content(tokens_lex, tokens):
             for item in state:
                 # caso especial para la reducción [S' -> S·]
                 if item.production[0] == start_symbol + "'" and item.position == len(item.production[1]):
-                    handle_conflict(action_table, i, '$', "ACC")
+                    action_table.loc[i, '$'] = "ACC"
                 # caso para [A -> α·]
                 elif item.position == len(item.production[1]):
                     for symbol in follow_sets.get(item.production[0], []):
