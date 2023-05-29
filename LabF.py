@@ -1,8 +1,9 @@
 import re
 from LR import coleccion_canonica
-from LL import primeros, siguientes
+from LL import primeros, siguientes, get_terminales_no_terminales
 from graficar import dibujar_lr0
 import pandas as pd
+import numpy as np
 
 # toma el nombre del archivo YALP como argumento y devuelve el contenido del archivo como una cadena
 
@@ -174,83 +175,63 @@ if same_content(tokens_lex, tokens):
 
     # LAB F DESDE AQUI
 
-    def generate_slr_tables(states, transitions, productions):
-        # Initialize ACTION and GOTO tables
-        action_table = {}
-        goto_table = {}
+    def generate_slr_tables(states, transitions, productions, first_sets, follow_sets, non_terminals, terminals):
+        start_symbol = list(productions.keys())[0]  # Símbolo de inicio
 
-        # Convert the set of states into an ordered list
-        ordered_states = sorted(states)
+        # Crear tabla de ACCION y tabla de GOTO inicialmente vacías
+        action_table = pd.DataFrame(index=range(
+            len(states)), columns=terminals, dtype=object)
 
-        state_ids = {}  # Dictionary to store state identifiers
+        goto_table = pd.DataFrame(index=range(len(
+            states)), columns=non_terminals, dtype=object)  # Quitar el símbolo de dolar ($)
 
-        for state_id, state in enumerate(ordered_states):
-            state_ids[frozenset(state)] = state_id
-            action_table[state_id] = {}
-            goto_table[state_id] = {}
+        # Crear una lista de producciones y un diccionario para mapear las producciones a su índice correspondiente
+        production_list = []
+        production_index = {}
+        for key in productions.keys():
+            for value in productions[key]:
+                prod = (key, tuple(value))
+                production_index[prod] = len(production_list)
+                production_list.append(prod)
 
-        for transition in transitions:
-            current, symbol, nextsym = transition
-            if symbol == "$":
-                action_table[current]["$"] = "acc"
-
-        # Fill the ACTION and GOTO tables
-        for state in states:
-            # Get the identifier of the state
-            state_id = state_ids[frozenset(state)]
+        # Rellenar las tablas
+        for i, state in enumerate(states):
             for item in state:
-                production = item.production
-                position = item.position
-
-                # Caso 1: Item completado (punto al final)
-                if position == len(production[1]):
-                    if production[0] != 'expression' and not item.derived:
-                        # Reduction (R)
-                        follow_symbols = siguientes(productions, production[0])
-                        for symbol in follow_symbols:
-                            if symbol.isupper():
-                                action_table[state_id][symbol] = 'R' + \
-                                    str(list(productions.keys()).index(
-                                        production[0]))
-
-                else:
-                    symbol = production[1][position]
-
-                    # Caso 2: Transicion hacia un estado con GOTO (SHIFT)
-                    if symbol.isalpha() and symbol.islower():
-                        next_state_id = state_id
-                        goto_table[state_id][symbol] = next_state_id
-                    # Caso 3: Shift
-                    elif symbol.isalpha() and symbol.isupper():
-                        next_state_id = state_id + 1  # Increment the state identifier
-                        action_table[state_id][symbol] = 'S' + \
-                            str(next_state_id)
+                # caso especial para la reducción [S' -> S·]
+                if item.production[0] == start_symbol + "'" and item.position == len(item.production[1]):
+                    action_table.loc[i, '$'] = "ACC"
+                # caso para [A -> α·]
+                elif item.position == len(item.production[1]):
+                    for symbol in follow_sets.get(item.production[0], []):
+                        prod = (item.production[0], tuple(item.production[1]))
+                        action_table.loc[i,
+                                         symbol] = f"R{production_index.get(prod, -1)}"
+            for trans in transitions:
+                if trans[0] == i:
+                    if trans[1] in terminals:  # caso para [A → α·aβ]
+                        action_table.loc[i, trans[1]] = f"S{trans[2]}"
+                    elif trans[1] in non_terminals:  # caso para ir_A
+                        goto_table.loc[i, trans[1]] = trans[2]
 
         return action_table, goto_table
 
+    terminals, no_terminals = get_terminales_no_terminales(
+        converted_productions)
+
     # Obtener las tablas de análisis SLR
     action_table, goto_table = generate_slr_tables(
-        states, transitions, converted_productions)
+        states, transitions, converted_productions, first, follow, no_terminals, terminals)
 
-    print(action_table)
+    # Concatenamos las tablas para su impresion
+    concatenated_table = pd.concat(
+        [action_table, goto_table], axis=1, keys=['ACTION', 'GOTO'])
 
-    # ACTION table
-    action_df = pd.DataFrame.from_dict(action_table, orient='index')
-    action_df.index.name = 'State'
-    action_df.columns.name = 'Symbol'
+    # remplazamos NaN con "-"
+    concatenated_table = concatenated_table.fillna('-')
 
-    # GOTO table
-    goto_df = pd.DataFrame.from_dict(goto_table, orient='index')
-    goto_df.index.name = 'State'
-    goto_df.columns.name = 'Symbol'
-
-    # Combine the tables side by side
-    combined_df = pd.concat([action_df, goto_df],
-                            axis=1, keys=['ACTION', 'GOTO'])
-
-    # Print the combined table
-    print("\nSLR Parsing Tables:")
-    print(combined_df)
+    # imprimimos la tabla
+    print('\nTABLA DE PARSEO SLR')
+    print(concatenated_table)
 
 
 else:
