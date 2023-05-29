@@ -193,6 +193,9 @@ for palabra in palabras:
                     if afn[0][0] == "letter":
                         # Replace with "ID" for recognized identifiers
                         resultado_sustituciones.append("ID")
+                    elif afn[0][0] == "digit":
+                        # Replace with "NUMBER" for recognized identifiers
+                        resultado_sustituciones.append("NUMBER")
                     else:
                         # Replace with uppercase representation of recognized tokens
                         resultado_sustituciones.append(str(afn[0][0]).upper())
