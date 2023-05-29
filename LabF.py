@@ -252,9 +252,12 @@ if same_content(tokens_lex, tokens):
     print('\nTABLA DE PARSEO SLR')
     print(concatenated_table)
 
-    print("\nInforme de Errores:")
-    for error in error_list:
-        print(error)
+    if len(error_list) > 0:
+        print("\nInforme de Errores:")
+        for error in error_list:
+            print(error)
+    else:
+        print("\nNo hay errores, se prosigue con la ejecución")
 
     #print("\nproductions: ", converted_productions)
     #print("\nterminales: ", terminals)
