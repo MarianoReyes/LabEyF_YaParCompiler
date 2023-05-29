@@ -274,9 +274,8 @@ if same_content(tokens_lex, tokens):
             current_token = input_tokens[input_index]
             action = action_table.loc[current_state, current_token]
 
-            print("cs:", current_state)
-            print("ct:", current_token)
-            print("action:", action)
+            print("cs:", current_state, "-> ct:",
+                  current_token, "-> action:", action)
 
             if action.startswith('S'):
                 # Desplazamiento (shift)
