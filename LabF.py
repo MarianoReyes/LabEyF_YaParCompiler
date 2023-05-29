@@ -275,41 +275,46 @@ if same_content(tokens_lex, tokens):
                 current_token = input_tokens[input_index]
                 action = action_table.loc[current_state, current_token]
             except:
-                print("\nError en la cadena analizada")
+                print("\nError por TOKEN en la cadena analizada")
                 break
 
             print("current state:", current_state, "-> current token:",
                   current_token, "-> action:", action)
 
-            if action.startswith('S'):
-                # Desplazamiento (shift)
-                next_state = int(action[1:])
-                parse_stack.append(current_token)
-                parse_stack.append(next_state)
-                input_index += 1
-            elif action.startswith('R'):
-                # Reducción (reduce)
-                production_num = int(action[1:])
-                production = production_list[production_num]
-                lhs, rhs = production
+            try:
 
-                # Desapilar símbolos
-                num_symbols = len(rhs)
-                parse_stack = parse_stack[:-2 * num_symbols]
+                if action.startswith('S'):
+                    # Desplazamiento (shift)
+                    next_state = int(action[1:])
+                    parse_stack.append(current_token)
+                    parse_stack.append(next_state)
+                    input_index += 1
+                elif action.startswith('R'):
+                    # Reducción (reduce)
+                    production_num = int(action[1:])
+                    production = production_list[production_num]
+                    lhs, rhs = production
 
-                # Obtener el estado actual después de la reducción
-                current_state = parse_stack[-1]
-                next_state = goto_table.loc[current_state, lhs]
+                    # Desapilar símbolos
+                    num_symbols = len(rhs)
+                    parse_stack = parse_stack[:-2 * num_symbols]
 
-                parse_stack.append(lhs)
-                parse_stack.append(next_state)
-            elif action == 'ACC':
-                # Análisis completado
-                print('\nLa cadena de entrada es válida.')
-                break
-            else:
-                # Error sintáctico
-                print('\nError sintáctico: la cadena de entrada no es válida.')
+                    # Obtener el estado actual después de la reducción
+                    current_state = parse_stack[-1]
+                    next_state = goto_table.loc[current_state, lhs]
+
+                    parse_stack.append(lhs)
+                    parse_stack.append(next_state)
+                elif action == 'ACC':
+                    # Análisis completado
+                    print('\nLa cadena de entrada es válida.')
+                    break
+                else:
+                    # Error sintáctico
+                    print('\nError sintáctico: la cadena de entrada no es válida.')
+                    break
+            except:
+                print("\nError al momento de realizar el parseo de la entrada.")
                 break
 
     file_path = input("\nQue archivo de texto deseamos evaluar? -> ")
