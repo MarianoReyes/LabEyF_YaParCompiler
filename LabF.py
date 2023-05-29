@@ -127,10 +127,15 @@ for i, line in enumerate(lines):
 tokens_lex = []
 if rule_tokens_index is not None:
     for line in lines[rule_tokens_index + 1:]:
-        tokens_lex.extend(re.findall(r"\{\s*(.+?)\s*\}", line))
+        match = re.search(r"\{\s*(.*?)\s*\}", line)
+        if match and match.group(1):  # Check if the captured content is not empty
+            tokens_lex.append(match.group(1))
 
 tokens, productions_dict = procesar_yalp(archivo + '.yalp')
 converted_productions = convert_productions(productions_dict)
+
+print(tokens)
+print(tokens_lex)
 
 if same_content(tokens_lex, tokens):
     states, transitions = coleccion_canonica(converted_productions)
@@ -170,7 +175,6 @@ if same_content(tokens_lex, tokens):
 
     # print("\nstates: ", states)
     # print("\ntransitions: ", transitions)
-    # print("\nproductions: ", converted_productions)
 
     # LAB F DESDE AQUI
 
@@ -212,13 +216,13 @@ if same_content(tokens_lex, tokens):
                     elif trans[1] in non_terminals:  # caso para ir_A
                         goto_table.loc[i, trans[1]] = trans[2]
 
-        return action_table, goto_table
+        return action_table, goto_table, production_list
 
     terminals, no_terminals = get_terminales_no_terminales(
         converted_productions)
 
     # Obtener las tablas de análisis SLR
-    action_table, goto_table = generate_slr_tables(
+    action_table, goto_table, production_list = generate_slr_tables(
         states, transitions, converted_productions, first, follow, no_terminals, terminals)
 
     # Concatenamos las tablas para su impresion
@@ -232,70 +236,59 @@ if same_content(tokens_lex, tokens):
     print('\nTABLA DE PARSEO SLR')
     print(concatenated_table)
 
-    def parse_input(input_file, action_table, goto_table):
-        # Read the input file
-        with open(input_file, 'r') as file:
-            input_string = file.readline().strip()  # Read the first line
+    #print("\nproductions: ", converted_productions)
+    #print("\nterminales: ", terminals)
+    #print("\nno erminales: ", no_terminals)
 
-        # Create an empty stack for parsing
-        stack = [0]
+    def parse_slr(input_tokens, action_table, goto_table, production_list):
+        parse_stack = [0]  # Pila inicial con el estado 0
+        # Agregar fin de entrada al final de input_tokens
+        input_tokens.append('$')
+        input_index = 0  # Índice para rastrear el token actual en input_tokens
 
-        # Add end of input symbol ('$') to the input string
-        input_string += '$'
-
-        # Start parsing
         while True:
-            # Get the current state from the top of the stack
-            current_state = stack[-1]
-
-            # Get the next input symbol
-            next_symbol = input_string[0]
-
-            # Get the action from the action table
-            action = action_table.loc[current_state, next_symbol]
+            current_state = parse_stack[-1]
+            current_token = input_tokens[input_index]
+            action = action_table.loc[current_state, current_token]
 
             if action.startswith('S'):
-                # Shift: Move to the next state
-                next_state = int(action[2:])
-                stack.append(next_state)
-                input_string = input_string[1:]  # Consume the input symbol
-
+                # Desplazamiento (shift)
+                next_state = int(action[1:])
+                parse_stack.append(current_token)
+                parse_stack.append(next_state)
+                input_index += 1
             elif action.startswith('R'):
-                # Reduce: Apply the production
-                production_index = int(action[2:])
-                production = production_list[production_index]
+                # Reducción (reduce)
+                production_num = int(action[1:])
+                production = production_list[production_num]
+                lhs, rhs = production
 
-                # Get the non-terminal and production length
-                non_terminal, production_length = production
+                # Desapilar símbolos
+                num_symbols = len(rhs)
+                parse_stack = parse_stack[:-2 * num_symbols]
 
-                # Pop the production symbols from the stack
-                stack = stack[:-production_length]
+                # Obtener el estado actual después de la reducción
+                current_state = parse_stack[-1]
+                next_state = goto_table.loc[current_state, lhs]
 
-                # Get the new current state from the top of the stack
-                current_state = stack[-1]
-
-                # Get the goto state from the goto table
-                goto_state = goto_table.loc[current_state, non_terminal]
-
-                # Push the non-terminal and goto state to the stack
-                stack.append(non_terminal)
-                stack.append(goto_state)
-
-            elif action == 'ACCEPT':
-                # Input string has been successfully parsed
-                print('Input string is valid!')
+                parse_stack.append(lhs)
+                parse_stack.append(next_state)
+            elif action == 'ACC':
+                # Análisis completado
+                print('\nLa cadena de entrada es válida.')
                 break
-
             else:
-                # Error: Invalid input
-                print('Invalid input string!')
+                # Error sintáctico
+                print('\nError sintáctico: la cadena de entrada no es válida.')
                 break
 
-    # Define the production_list (list of productions)
-    production_list = []
+    file_path = input("\nQue archivo de texto deseamos evaluar? -> ")
 
-    # Call the parse_input function with the input file and the action and goto tables
-    parse_input('input.txt', action_table, goto_table)
+    with open(file_path, 'r') as file:
+        content = file.read()
+        input_tokens = content.split()  # Dividir el contenido en palabras
+
+    parse_slr(input_tokens, action_table, goto_table, production_list)
 
 
 else:
