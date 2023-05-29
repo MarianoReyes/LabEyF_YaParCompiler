@@ -270,11 +270,15 @@ if same_content(tokens_lex, tokens):
         input_index = 0  # Índice para rastrear el token actual en input_tokens
 
         while True:
-            current_state = parse_stack[-1]
-            current_token = input_tokens[input_index]
-            action = action_table.loc[current_state, current_token]
+            try:
+                current_state = parse_stack[-1]
+                current_token = input_tokens[input_index]
+                action = action_table.loc[current_state, current_token]
+            except:
+                print("\nError en la cadena analizada")
+                break
 
-            print("cs:", current_state, "-> ct:",
+            print("current state:", current_state, "-> current token:",
                   current_token, "-> action:", action)
 
             if action.startswith('S'):
