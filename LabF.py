@@ -179,9 +179,9 @@ if same_content(tokens_lex, tokens):
     # LAB F DESDE AQUI
 
     def generate_slr_tables(states, transitions, productions, first_sets, follow_sets, non_terminals, terminals):
-        start_symbol = list(productions.keys())[0]  # Símbolo de inicio
+        start_symbol = list(productions.keys())[0]  # simbolo inicial
 
-        # Crear tabla de ACCION y tabla de GOTO inicialmente vacías
+        # inicializar action y goto tables
         action_table = pd.DataFrame(index=range(
             len(states)), columns=terminals, dtype=object)
 
@@ -207,7 +207,7 @@ if same_content(tokens_lex, tokens):
             else:
                 table.loc[row, col] = value
 
-        # Rellenar las tablas
+        # llenar las tablas
         for i, state in enumerate(states):
             for item in state:
                 # caso especial para la reducción [S' -> S·]
@@ -223,7 +223,7 @@ if same_content(tokens_lex, tokens):
                 if trans[0] == i:
                     if trans[1] in terminals:  # caso para [A → α·aβ]
                         action_table.loc[i, trans[1]] = f"S{trans[2]}"
-                    elif trans[1] in non_terminals:  # caso para ir_A
+                    elif trans[1] in non_terminals:  # caso para go to
                         goto_table.loc[i, trans[1]] = trans[2]
 
         return action_table, goto_table, production_list
