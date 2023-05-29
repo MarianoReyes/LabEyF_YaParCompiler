@@ -197,12 +197,22 @@ if same_content(tokens_lex, tokens):
                 production_index[prod] = len(production_list)
                 production_list.append(prod)
 
+        # Lista para almacenar los errores
+        error_list = []
+
+        def handle_conflict(table, row, col, value):
+            if table.loc[row, col] is not None:
+                error_list.append(
+                    f"Conflicto en ({row}, {col}): Valor actual: {table.loc[row, col]}, Nuevo valor: {value}")
+            else:
+                table.loc[row, col] = value
+
         # Rellenar las tablas
         for i, state in enumerate(states):
             for item in state:
                 # caso especial para la reducción [S' -> S·]
                 if item.production[0] == start_symbol + "'" and item.position == len(item.production[1]):
-                    action_table.loc[i, '$'] = "ACC"
+                    handle_conflict(action_table, i, '$', "ACC")
                 # caso para [A -> α·]
                 elif item.position == len(item.production[1]):
                     for symbol in follow_sets.get(item.production[0], []):

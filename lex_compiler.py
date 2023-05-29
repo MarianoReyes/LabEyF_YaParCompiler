@@ -142,6 +142,7 @@ imports = '''
 from Postfix_AFN import PostifixToAFN 
 import pickle
 import re
+import sys
 '''
 codigo = '''
 # cargar bytes desde archivos binarios
@@ -174,6 +175,7 @@ def reemplazar_parentesis(value):
     value = value.replace(')', '>')
     return value
 
+error = False
 
 resultado_sustituciones = []  # Initialize a new list to store word substitutions
 
@@ -184,8 +186,7 @@ for palabra in palabras:
 
     try:
         if valor == False:
-            # Word not recognized, add as is
-            resultado_sustituciones.append(palabra)
+            error = True
         elif valor[0] == True:
             for afn in afns:
                 if valor[1] in afn[1].ef:
@@ -199,16 +200,19 @@ for palabra in palabras:
     except:
         pass
 
-new_archivo = input("\\nIngrese el nombre del archivo nuevo:\\n--> ")
+if error == False:
+    new_archivo = input("\\nIngrese el nombre del archivo nuevo:\\n--> ")
 
-# Write the modified results to the new file
-with open(new_archivo, 'w') as f:
-    for palabra, sustitucion in zip(palabras, resultado_sustituciones):
-        # Replace the original word with the recognized value
-        contenido = contenido.replace(palabra, sustitucion)
-    f.write(contenido)
+    # Write the modified results to the new file
+    with open(new_archivo, 'w') as f:
+        for palabra, sustitucion in zip(palabras, resultado_sustituciones):
+            # Replace the original word with the recognized value
+            contenido = contenido.replace(palabra, sustitucion)
+        f.write(contenido)
 
-print("\\nArchivo resuelto con exito")
+    print("\\nArchivo resuelto con exito")
+else:
+    print("\\nEl archivo input esta mal.")
 '''
 with open('compilado.py', 'w') as archivo:
     archivo.write(imports)
