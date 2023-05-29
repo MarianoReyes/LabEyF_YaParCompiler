@@ -222,22 +222,23 @@ if same_content(tokens_lex, tokens):
                 elif item.position == len(item.production[1]):
                     for symbol in follow_sets.get(item.production[0], []):
                         prod = (item.production[0], tuple(item.production[1]))
-                        action_table.loc[i,
-                                         symbol] = f"R{production_index.get(prod, -1)}"
+                        handle_conflict(action_table, i, symbol,
+                                        f"R{production_index.get(prod, -1)}")
             for trans in transitions:
                 if trans[0] == i:
                     if trans[1] in terminals:  # caso para [A → α·aβ]
-                        action_table.loc[i, trans[1]] = f"S{trans[2]}"
+                        handle_conflict(action_table, i,
+                                        trans[1], f"S{trans[2]}")
                     elif trans[1] in non_terminals:  # caso para go to
                         goto_table.loc[i, trans[1]] = trans[2]
 
-        return action_table, goto_table, production_list
+        return action_table, goto_table, production_list, error_list
 
     terminals, no_terminals = get_terminales_no_terminales(
         converted_productions)
 
     # Obtener las tablas de análisis SLR
-    action_table, goto_table, production_list = generate_slr_tables(
+    action_table, goto_table, production_list, error_list = generate_slr_tables(
         states, transitions, converted_productions, first, follow, no_terminals, terminals)
 
     # Concatenamos las tablas para su impresion
@@ -250,6 +251,10 @@ if same_content(tokens_lex, tokens):
     # imprimimos la tabla
     print('\nTABLA DE PARSEO SLR')
     print(concatenated_table)
+
+    print("\nInforme de Errores:")
+    for error in error_list:
+        print(error)
 
     #print("\nproductions: ", converted_productions)
     #print("\nterminales: ", terminals)
@@ -265,6 +270,10 @@ if same_content(tokens_lex, tokens):
             current_state = parse_stack[-1]
             current_token = input_tokens[input_index]
             action = action_table.loc[current_state, current_token]
+
+            print("cs:", current_state)
+            print("ct:", current_token)
+            print("action:", action)
 
             if action.startswith('S'):
                 # Desplazamiento (shift)
