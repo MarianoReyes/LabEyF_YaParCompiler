@@ -67,7 +67,7 @@ for i, token in enumerate(tokenizer.tokens):
         new_tokens.append((token[0], token[1], token[2]))
     if not token[2]:
         operands_operators = []
-        regex_splitted = re.findall('\w+|[?()|\-=@#%+*<>"]', token[1])
+        regex_splitted = re.findall('\w+|[?()|\-=@#%+*<>/"]', token[1])
         operands_operators.extend(regex_splitted)
 
         for i, element in enumerate(operands_operators):

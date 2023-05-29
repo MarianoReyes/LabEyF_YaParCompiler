@@ -66,7 +66,7 @@ class PostifixToAFN():
 
     def operando(self, caracter):
         operandos_validos = ['ε', '-', '=', '.',
-                             '^', '+', '*', '"', ',', '<', '>']
+                             '^', '+', '*', '"', ',', '<', '>', '/']
         if caracter.isalpha() or caracter.isnumeric() or caracter in operandos_validos:
             return True
         else:
