@@ -201,11 +201,16 @@ if same_content(tokens_lex, tokens):
         error_list = []
 
         def handle_conflict(table, row, col, value):
-            if pd.notna(table.loc[row, col]) and col != '$':
+            try:
+                if pd.notna(table.loc[row, col]) and col != '$':
+                    existing_value = table.loc[row, col]
+                    error_list.append(
+                        f'Conflict in [{row}, {col}]: Multiple actions ({existing_value}, {value})')
+                else:
+                    table.loc[row, col] = value
+            except KeyError:
                 error_list.append(
-                    f'1 Conflict in [{i},{col}] = ({table.loc[row, col]},{value}')
-            else:
-                table.loc[row, col] = value
+                    f'Invalid column key: {col} in [{row}, {col}]')
 
         # llenar las tablas
         for i, state in enumerate(states):
