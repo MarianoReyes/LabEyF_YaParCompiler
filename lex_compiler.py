@@ -31,6 +31,8 @@ errores = 0
 
 print("\nCreando afns...")
 
+print(tokenizer.tokens)
+
 # por cada token en tokens creamos un afn si es simple
 for i, token in enumerate(tokenizer.tokens):
     if token[2] == True:
@@ -65,7 +67,7 @@ for i, token in enumerate(tokenizer.tokens):
         new_tokens.append((token[0], token[1], token[2]))
     if not token[2]:
         operands_operators = []
-        regex_splitted = re.findall('\w+|[?()|\-=@#%+*"]', token[1])
+        regex_splitted = re.findall('\w+|[?()|\-=@#%+*<>"]', token[1])
         operands_operators.extend(regex_splitted)
 
         for i, element in enumerate(operands_operators):
@@ -167,32 +169,44 @@ def reemplazar_espacios(value):
     value = value.replace(' ', ',')
     return value
 
+def reemplazar_parentesis(value):
+    value = value.replace('(', '<')
+    value = value.replace(')', '>')
+    return value
 
-resultado_verificaciones = []
+
+resultado_sustituciones = []  # Initialize a new list to store word substitutions
+
 for palabra in palabras:
     palabra = reemplazar_espacios(palabra)
+    palabra = reemplazar_parentesis(palabra)
     valor = afn_final.simular_cadena(palabra)
+
     try:
         if valor == False:
-            resultado_verificaciones.append(
-                "'" + palabra + "'" + " --> No se reconoce")
-        if valor[0] == True:
+            # Word not recognized, add as is
+            resultado_sustituciones.append(palabra)
+        elif valor[0] == True:
             for afn in afns:
                 if valor[1] in afn[1].ef:
-                    resultado_verificaciones.append(
-                        "'" + palabra + "'" + " --> " + str(afn[0][0]).upper())
+                    if afn[0][0] == "letter":
+                        # Replace with "ID" for recognized identifiers
+                        resultado_sustituciones.append("ID")
+                    else:
+                        # Replace with uppercase representation of recognized tokens
+                        resultado_sustituciones.append(str(afn[0][0]).upper())
                     break
     except:
         pass
 
-new_archivo = input("\\nIngrese el nombre del archivo nuevo:\\n--> ") 
-# Escribir el resultado en el .txt
+new_archivo = input("\\nIngrese el nombre del archivo nuevo:\\n--> ")
+
+# Write the modified results to the new file
 with open(new_archivo, 'w') as f:
+    for palabra, sustitucion in zip(palabras, resultado_sustituciones):
+        # Replace the original word with the recognized value
+        contenido = contenido.replace(palabra, sustitucion)
     f.write(contenido)
-    f.write('\\n\\n')
-    for resultado in resultado_verificaciones:
-        f.write(resultado)
-        f.write('\\n')
 
 print("\\nArchivo resuelto con exito")
 '''
