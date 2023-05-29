@@ -168,10 +168,9 @@ if same_content(tokens_lex, tokens):
     for non_terminal, follow_set in follow.items():
         print(f"{non_terminal}: {follow_set}")
 
-    print("\nstates: ", states)
-    print("\ntransitions: ", transitions)
-
-    print("\nproductions: ", converted_productions)
+    # print("\nstates: ", states)
+    # print("\ntransitions: ", transitions)
+    # print("\nproductions: ", converted_productions)
 
     # LAB F DESDE AQUI
 
@@ -232,6 +231,71 @@ if same_content(tokens_lex, tokens):
     # imprimimos la tabla
     print('\nTABLA DE PARSEO SLR')
     print(concatenated_table)
+
+    def parse_input(input_file, action_table, goto_table):
+        # Read the input file
+        with open(input_file, 'r') as file:
+            input_string = file.readline().strip()  # Read the first line
+
+        # Create an empty stack for parsing
+        stack = [0]
+
+        # Add end of input symbol ('$') to the input string
+        input_string += '$'
+
+        # Start parsing
+        while True:
+            # Get the current state from the top of the stack
+            current_state = stack[-1]
+
+            # Get the next input symbol
+            next_symbol = input_string[0]
+
+            # Get the action from the action table
+            action = action_table.loc[current_state, next_symbol]
+
+            if action.startswith('S'):
+                # Shift: Move to the next state
+                next_state = int(action[2:])
+                stack.append(next_state)
+                input_string = input_string[1:]  # Consume the input symbol
+
+            elif action.startswith('R'):
+                # Reduce: Apply the production
+                production_index = int(action[2:])
+                production = production_list[production_index]
+
+                # Get the non-terminal and production length
+                non_terminal, production_length = production
+
+                # Pop the production symbols from the stack
+                stack = stack[:-production_length]
+
+                # Get the new current state from the top of the stack
+                current_state = stack[-1]
+
+                # Get the goto state from the goto table
+                goto_state = goto_table.loc[current_state, non_terminal]
+
+                # Push the non-terminal and goto state to the stack
+                stack.append(non_terminal)
+                stack.append(goto_state)
+
+            elif action == 'ACCEPT':
+                # Input string has been successfully parsed
+                print('Input string is valid!')
+                break
+
+            else:
+                # Error: Invalid input
+                print('Invalid input string!')
+                break
+
+    # Define the production_list (list of productions)
+    production_list = []
+
+    # Call the parse_input function with the input file and the action and goto tables
+    parse_input('input.txt', action_table, goto_table)
 
 
 else:
