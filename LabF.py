@@ -179,7 +179,7 @@ if same_content(tokens_lex, tokens):
 
     # LAB F DESDE AQUI
 
-    def generate_slr_tables(states, transitions, productions, first_sets, follow_sets, non_terminals, terminals):
+    def generate_slr_tables(states, transitions, productions, follow_sets, non_terminals, terminals):
         start_symbol = list(productions.keys())[0]  # simbolo inicial
 
         # inicializar action y goto tables
@@ -240,7 +240,7 @@ if same_content(tokens_lex, tokens):
 
     # Obtener las tablas de análisis SLR
     action_table, goto_table, production_list, error_list = generate_slr_tables(
-        states, transitions, converted_productions, first, follow, no_terminals, terminals)
+        states, transitions, converted_productions, follow, no_terminals, terminals)
 
     # Concatenamos las tablas para su impresion
     concatenated_table = pd.concat(
